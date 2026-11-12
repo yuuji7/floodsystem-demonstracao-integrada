@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#edf1ee"><meta name="description" content="Acompanhe chuva, subida da água e avisos de enchente no FloodSystem. Reproduza chuvas passadas ou teste o protótipo em 3D.">
+  <title>FloodSystem · Monitoramento de enchentes</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%231f4c43'/%3E%3Cpath d='M20 8C17 14 11 19 11 25a9 9 0 0018 0c0-6-6-11-9-17' fill='%23bdede0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="FloodSystem, início"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4C13 10 7 15 7 21a9 9 0 0 0 18 0c0-6-6-11-9-17Z"/><path class="wave" d="M10 21q3-3 6 0t6 0"/></svg></span><span>flood<span class="brand-light">system</span><small>LABORATÓRIO 3D</small></span></a>
+    <div class="audience-switch" role="group" aria-label="Visão do aplicativo">
+      <button type="button" data-audience-target="client" aria-pressed="true">Cliente</button>
+      <button type="button" data-audience-target="admin" aria-pressed="false">Administrador</button>
+    </div>
+    <div class="topbar-actions" data-admin-only hidden>
+      <span id="presentation-note" class="presentation-note" role="status" hidden>Tela cheia indisponível nesta janela.</span>
+      <button id="presentation-button" type="button" class="secondary-button presentation-button" aria-pressed="false">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2H2v4m8-4h4v4M2 10v4h4m8-4v4h-4"/></svg>
+        <span id="presentation-label">Apresentação</span>
+      </button>
+      <button id="about-button" class="text-button">Sobre o modelo <span aria-hidden="true">↗</span></button>
+    </div>
+  </header>
+  <main id="app" data-audience="client">
+    <section class="intro">
+      <div data-client-only>
+        <p class="eyebrow">VISÃO CLIENTE</p>
+        <h1>Risco de <em>enchente</em></h1>
+        <p class="intro-copy">Acompanhe a chuva na sua região e saiba quando agir.</p>
+      </div>
+      <div data-admin-only hidden>
+        <p class="eyebrow">VISÃO ADMINISTRADOR</p>
+        <h1>Controle da <em>simulação</em></h1>
+        <p class="intro-copy">Ajuste o ensaio e acompanhe as leituras técnicas do protótipo.</p>
+      </div>
+      <span class="simulation-badge" id="simulation-badge" hidden><span class="dot"></span><span id="simulation-status">Dados simulados</span></span>
+    </section>
+    <nav class="screen-nav" aria-label="Seções do painel">
+      <button type="button" data-screen-target="region" aria-pressed="true">Minha região</button>
+      <button type="button" data-screen-target="overview" aria-pressed="false" data-client-only>Simular chuva</button>
+      <button type="button" data-screen-target="overview" aria-pressed="false" data-admin-only hidden>Protótipo 3D</button>
+      <button type="button" data-screen-target="history" aria-pressed="false" data-admin-only hidden>Histórico do ensaio</button>
+    </nav>
+    <section class="screen" data-screen="overview" aria-label="Protótipo e leituras simuladas" hidden>
+    <section class="metrics" aria-label="Leituras dos sensores na simulação" data-admin-only hidden>
+      <article class="metric">
+        <span class="metric-icon" aria-hidden="true">↕</span>
+        <div><p>Nível da água <span class="sensor-label" data-admin-only hidden>ULTRASSÔNICO</span></p>
+          <strong id="level-value">40,0 <small>mm</small></strong>
+          <span class="metric-caption" id="level-headroom" data-client-only>155,5 mm até a saída de segurança</span>
+          <span class="metric-caption" id="distance-value" data-admin-only hidden>Distância até a água: 212,5 mm</span>
+        </div>
+      </article>
+      <article class="metric" data-admin-only hidden><span class="metric-icon blue" aria-hidden="true">⇆</span><div><p>Basculadas <span class="sensor-label">MAGNÉTICO</span></p><strong id="tips-value">0 <small>pulsos</small></strong><span class="metric-caption" id="bucket-value">0,00 / 15,38 mL na báscula</span></div></article>
+      <article class="metric metric-rain"><span class="metric-icon" aria-hidden="true">◌</span><div><p>Chuva acumulada</p><strong id="rain-value">0,00 <small>mm</small></strong><span class="metric-caption" data-client-only>Registrada neste ensaio</span><span class="metric-caption" id="calibration-value" data-admin-only hidden>2,17 mm por basculada</span></div></article>
+      <article class="metric metric-weather" data-client-only><span class="metric-icon blue" aria-hidden="true">↘</span><div><p id="weather-title">Intensidade da chuva</p><strong id="weather-value">180 <small>mm/h</small></strong><span class="metric-caption">Condição atual da simulação</span></div></article>
+      <article class="metric metric-input" data-admin-only hidden><span class="metric-icon amber" aria-hidden="true">↘</span><div><p>Entrada por funil</p><strong id="input-value">21,3 <small>mL/min</small></strong><span class="metric-caption" id="time-value">Tempo simulado: 00:00</span></div></article>
+    </section>
+    <div class="workspace" id="manual-workspace">
+      <section class="viewport-panel" id="prototype-panel" aria-label="Modelo tridimensional do FloodSystem">
+        <div class="viewport-header"><div class="viewport-title"><span class="dot"></span> Protótipo em acrílico <span class="subtle" data-admin-only hidden>/ 300 × 265,5 mm</span></div><div class="view-buttons" role="group" aria-label="Posição da câmera"><button class="active" data-view="perspective" aria-pressed="true">3D</button><button data-view="front" aria-pressed="false">Frente</button><button data-view="side" aria-pressed="false">Lateral</button><button data-view="bucket" aria-pressed="false">Báscula</button><button data-view="top" aria-pressed="false">Topo</button></div></div>
+        <div id="viewport"><canvas id="scene" aria-label="Modelo 3D: arraste para girar e use a roda do mouse para aproximar" tabindex="0"></canvas><div id="loading" class="loading"><span class="loading-ring"></span>Preparando o protótipo…</div><div id="scene-error" role="alert" hidden></div><div id="labels" aria-hidden="true"></div><div class="orientation" aria-hidden="true"><span>Y</span><i></i><b>X</b><em>Z</em></div><div class="viewport-hint"><span>↔</span> Arraste para girar <span class="hint-separator">·</span> Role para aproximar</div></div>
+        <div class="viewport-footer"><div class="legend"><span><i class="legend-dot water"></i> Água</span><span><i class="legend-dot outlet"></i> Saída de segurança</span><span data-admin-only hidden><i class="legend-dot sensor"></i> Sensores</span><span data-admin-only hidden><i class="legend-dot magnet"></i> Ímã</span></div><div class="display-buttons" data-admin-only hidden><button id="labels-toggle" class="active" aria-pressed="true">Rótulos</button><button id="cutaway-toggle" aria-pressed="false">Ver interior</button><button id="dimensions-toggle" aria-pressed="false">Medidas</button></div></div>
+      </section>
+      <aside class="data-panel client-simulation" aria-labelledby="client-simulation-heading" data-client-only>
+        <p class="eyebrow">DEMONSTRAÇÃO</p>
+        <h2 id="client-simulation-heading">Experimente uma chuva</h2>
+        <p>Escolha a intensidade e observe a água subir no modelo.</p>
+        <div class="client-rain-options" role="group" aria-label="Intensidade da chuva">
+          <button type="button" data-client-rain="0" aria-pressed="false">Sem chuva</button>
+          <button type="button" data-client-rain="10" aria-pressed="false">Leve</button>
+          <button type="button" data-client-rain="90" aria-pressed="true">Forte</button>
+          <button type="button" data-client-rain="600" aria-pressed="false">Muito intensa</button>
+        </div>
+        <div class="client-simulation-buttons">
+          <button id="client-run" type="button" class="primary-button">Iniciar chuva</button>
+          <button id="client-reset" type="button" class="secondary-button">Recomeçar</button>
+        </div>
+        <div id="client-alert" class="flood-alert" data-severity="unknown" role="status">
+          <span class="alert-indicator" aria-hidden="true"></span>
+          <div><strong id="client-alert-title">Simulação pronta</strong><p id="client-alert-copy">Inicie para ver quando o aviso aparece.</p></div>
+        </div>
+        <dl class="client-simulation-readings">
+          <div><dt>Chuva acumulada</dt><dd id="client-simulation-total">0,0 mm</dd></div>
+          <div><dt>Água no modelo</dt><dd id="client-water-trend">Aguardando início</dd></div>
+        </dl>
+        <p class="client-simulation-note">O tempo é acelerado. Este cenário é simulado.</p>
+      </aside>
+      <aside class="controls" aria-label="Controles da simulação" data-admin-only hidden>
+        <div class="controls-heading"><div><p class="eyebrow">OPERAÇÃO DO PROTÓTIPO</p><h2>Parâmetros do ensaio</h2></div><span class="control-symbol" aria-hidden="true">⤧</span></div>
+        <div id="lab-alert" class="lab-alert" data-severity="unknown" role="status"><strong id="lab-alert-title">Aguardando leitura simulada</strong><span id="lab-alert-context">O aviso acompanha a chuva e a subida da água.</span></div>
+        <div class="control-body">
+          <div class="section-title"><span>01</span><h3>Entrada de água</h3></div>
+          <div class="segmented mode-switch" role="group" aria-label="Tipo de entrada"><button data-mode="rain" class="active">Chuva</button><button data-mode="direct">Vazão direta</button></div>
+          <div id="rain-control"><label class="range-label" for="rain"><span>Intensidade da chuva</span><strong id="rain-output">180 <small>mm/h</small></strong></label><input id="rain" type="range" min="0" max="600" step="5" value="180"><div class="range-ticks"><span>0</span><span>300</span><span>600 mm/h</span></div><div class="preset-buttons" role="group" aria-label="Cenários de chuva"><button data-rain="0">Sem chuva</button><button data-rain="50">50</button><button data-rain="150">150</button><button data-rain="300">300</button><button data-rain="600">600 mm/h</button></div></div>
+          <div id="direct-control" hidden><label class="range-label" for="direct-flow"><span>Vazão por funil</span><strong id="direct-output">100 <small>mL/min</small></strong></label><input id="direct-flow" type="range" min="0" max="500" step="5" value="100"><div class="range-ticks"><span>0</span><span>250</span><span>500 mL/min</span></div><p class="field-note">Faixa de teste escolhida para a simulação; a capacidade real das mangueiras ainda precisa ser medida.</p></div>
+          <div class="section-title second"><span>02</span><h3>Saídas de água</h3><span class="estimated">estimadas</span></div>
+          <label class="range-label" for="left-valve"><span>Reservatório esquerdo</span><strong id="left-valve-output">50<small>%</small></strong></label><input id="left-valve" type="range" min="0" max="100" value="50"><div class="flow-caption"><span>Abertura da torneira</span><span id="left-flow">12,6 mL/min</span></div>
+          <label class="range-label right-valve-label" for="right-valve"><span>Dreno da báscula</span><strong id="right-valve-output">100<small>%</small></strong></label><input id="right-valve" type="range" min="0" max="100" value="100"><div class="flow-caption"><span>Após a medição</span><span id="right-flow">0,0 mL/min</span></div>
+          <dl class="safety-readings" aria-label="Leituras da saída de segurança">
+            <div><dt>Saída lateral <small>80 × 5 mm</small></dt><dd id="safety-flow">0,0 mL/min</dd></div>
+            <div><dt>Volume escoado pela abertura</dt><dd id="safety-volume">0,0 mL</dd></div>
+            <div><dt>Transbordamento da báscula</dt><dd id="basin-overflow">0,0 mL</dd></div>
+          </dl>
+          <details id="parameters"><summary>Medidas e calibração <span>＋</span></summary><div class="parameters-content"><label>Diâmetro da boca do funil <span><input id="diameter" type="number" min="50" max="150" step="0.1" value="95"> mm</span></label><label>Volume por basculada <span><input id="tip-volume" type="number" min="1" max="100" step="0.01" value="15.38"> mL</span></label><label>Saída esquerda a 10 cm <span><input id="left-reference" type="number" min="0" max="2000" step="1" value="40"> mL/min</span></label><label>Saída direita a 2 cm <span><input id="right-reference" type="number" min="0" max="2000" step="1" value="160"> mL/min</span></label><label>Nível inicial ao reiniciar <span><input id="initial-level" type="number" min="0" step="0.1" value="40"> mm</span></label><p>Mudar o diâmetro do funil recalcula o volume para 2,17 mm de chuva por virada. Alterar a calibração reinicia o ensaio.</p><button id="article-button" class="article-button">Usar área de referência do artigo</button><p class="model-dimensions">Acrílico: 5 mm · Caixa direita: 160 × 145 × 168 mm · Abertura lateral: 80 × 5 mm. Mangueiras de entrada e saída: Ø interno de 4 mm.</p></div></details>
+        </div>
+        <div class="control-footer">
+          <div class="time-control"><span>Velocidade</span><div class="segmented speed-switch" role="group" aria-label="Velocidade da simulação"><button data-speed="1">1×</button><button data-speed="10">10×</button><button data-speed="30" class="active">30×</button><button data-speed="60">60×</button></div></div>
+          <div class="transport"><button id="pause-button" class="primary-button"><span id="pause-icon">Ⅱ</span><span id="pause-text">Pausar</span></button><button id="reset-button" class="icon-button" title="Reiniciar a simulação" aria-label="Reiniciar a simulação">↺</button></div>
+          <p class="pulse-inline"><span class="pulse-dot" id="pulse-dot"></span> Último pulso · <strong id="last-pulse">Aguardando basculada</strong></p>
+        </div>
+      </aside>
+    </div>
+    </section>
+    <section class="screen resident-dashboard" data-screen="region" aria-label="Monitoramento da região">
+      <div class="resident-toolbar data-panel" id="weather-toolbar">
+        <div class="case-switch" role="group" aria-label="Modo de monitoramento">
+          <button type="button" data-region-mode="live" aria-pressed="true">Ao vivo</button>
+          <button type="button" data-region-mode="replay" aria-pressed="false">Testar chuva passada</button>
+        </div>
+        <label for="station-select" id="live-location">Cidade ou estação
+          <select id="station-select"><option value="">Buscando cidades com chuva…</option></select>
+        </label>
+        <button id="refresh-region" type="button" class="secondary-button">Atualizar</button>
+      </div>
+      <div id="rain-choices" class="rain-choices">
+        <span id="rain-choices-label">Buscando locais com chuva…</span>
+        <div id="rain-choice-list" aria-label="Locais com chuva"></div>
+      </div>
+      <section class="data-panel rain-library" id="rain-library" aria-labelledby="rain-library-title" hidden>
+        <h2 id="rain-library-title">Histórico de chuva</h2>
+        <p>Escolha um registro para reproduzir a chuva no protótipo e acompanhar os avisos.</p>
+        <div id="rain-cases" class="rain-cases"></div>
+        <form id="history-search" class="history-search">
+          <label for="history-station">Outra estação do RS <select id="history-station" required><option value="">Escolha a estação</option></select></label>
+          <label for="history-date">Data final <input type="date" id="history-date"></label>
+          <button class="secondary-button" type="submit">Buscar 48 horas</button>
+          <p id="history-search-status" role="status"></p>
+        </form>
+      </section>
+      <div id="weather-detail">
+      <p id="region-status" class="resident-source">Consultando as leituras da região…</p>
+      <div id="replay-panel" class="replay-panel data-panel" hidden>
+        <div class="replay-buttons">
+          <button id="back-to-rain-cases" type="button" class="secondary-button">← Lista</button>
+          <button id="replay-play" type="button" class="secondary-button" disabled>Reproduzir</button>
+          <button id="replay-next" type="button" class="secondary-button" disabled>Avançar</button>
+          <button id="replay-wet" type="button" class="secondary-button" disabled>Ver chuva</button>
+          <button id="replay-warning" type="button" class="secondary-button" disabled>Ver aviso</button>
+        </div>
+        <label for="replay-position"><span id="replay-time">Carregando chuva passada…</span>
+          <input id="replay-position" type="range" min="0" max="1" step="1" value="0" disabled>
+        </label>
+        <p id="replay-first" class="replay-first"></p>
+      </div>
+      <div class="weather-workspace">
+        <div id="regional-model">
+          <p class="weather-model-note" id="weather-model-note">Aguardando uma leitura de chuva para o protótipo.</p>
+        </div>
+        <aside class="weather-sidebar" aria-label="Chuva, nível e alertas">
+        <article id="resident-alert" class="resident-alert data-panel" data-severity="unknown">
+          <div class="resident-status-head"><span class="resident-status-pill"><i></i><span id="resident-status">Aguardando dados</span></span>
+            <a id="station-map" target="_blank" rel="noopener noreferrer" hidden>Ver local no mapa ↗</a>
+          </div>
+          <div id="resident-message" role="status" aria-atomic="true">
+            <h2 id="resident-title">Buscando a situação da região</h2>
+            <p id="resident-reason">Estamos consultando a chuva e o nível da água.</p>
+          </div>
+          <div class="resident-action">
+            <div><strong id="action-label">O que fazer agora</strong><p id="resident-action">Escolha uma estação que represente sua região.</p></div>
+            <a id="bulletins" class="secondary-button" href="https://www.defesacivil.rs.gov.br/avisos-e-boletins" target="_blank" rel="noopener noreferrer">Avisos oficiais ↗</a>
+          </div>
+        </article>
+        <article class="data-panel official-weather" id="official-weather">
+          <div><h3 id="official-weather-label">Alerta oficial</h3><strong id="official-weather-level">Sem classificação disponível</strong></div>
+          <p id="official-weather-note"></p>
+          <a id="official-weather-link" target="_blank" rel="noopener noreferrer" hidden>Consultar fonte oficial ↗</a>
+        </article>
+        <div class="data-panel model-alert-line" id="regional-prototype-alert" data-severity="unknown">
+          <strong>No protótipo</strong><span id="regional-prototype-message">Aguardando chuva.</span>
+        </div>
+        <article class="resident-score data-panel">
+          <p class="eyebrow">FLOODSYSTEM</p>
+          <h2>Indicador de risco</h2>
+          <div class="resident-score-values">
+            <div><span>Sinais de risco</span><strong id="risk-score">—</strong></div>
+            <div><span>Margem no indicador</span><strong id="risk-margin">—</strong></div>
+          </div>
+          <meter id="risk-meter" min="0" max="100" value="0" aria-label="Índice experimental de risco" hidden></meter>
+          <p id="score-note">O indicador precisa de dados recentes de chuva e de nível da água.</p>
+        </article>
+        <div class="resident-observations" aria-label="Condições observadas">
+        <article class="data-panel observation-card"><span class="observation-icon" aria-hidden="true">☂</span><div><h3>Chuva</h3><strong id="resident-rain">Aguardando leitura</strong><p id="resident-rain-note">Última leitura na região</p></div></article>
+        <article class="data-panel observation-card"><span class="observation-icon" aria-hidden="true">≋</span><div><h3>Chuva acumulada</h3><strong id="resident-total">—</strong><p id="resident-total-note">Na última hora</p></div></article>
+        <article class="data-panel observation-card"><span class="observation-icon" aria-hidden="true">↗</span><div><h3>Nível da água</h3><strong id="resident-water">Aguardando leitura</strong><p id="resident-water-note">Tendência na estação</p></div></article>
+        </div>
+        </aside>
+      </div>
+      <p class="resident-context">O painel acompanha uma estação da região. Para avaliar a sua casa, é preciso medir no imóvel e conhecer o risco da área.</p>
+      <details class="data-panel technical-panel" data-admin-only hidden>
+        <summary>Leituras e calibração do detector</summary>
+        <div class="panel-body">
+          <p id="technical-reading"></p>
+          <p id="technical-replay"></p>
+          <p class="source-note" id="technical-limits"></p>
+          <div id="river-plot" class="river-plot" hidden>
+            <svg id="river-chart" viewBox="0 0 680 132" role="img" aria-label="Série de chuva e cota do rio"></svg>
+            <div class="plot-legend"><span><i></i> Chuva (mm/10 min)</span><span><i></i> Cota do rio (m)</span></div>
+          </div>
+          <p id="river-summary" class="series-summary"></p>
+        </div>
+      </details>
+      <details class="data-panel technical-panel" data-admin-only hidden>
+        <summary>Suscetibilidade do imóvel no mapa do SGB</summary>
+        <div class="panel-body">
+          <form id="property-form">
+            <label for="latitude">Latitude<input id="latitude" name="latitude" placeholder="-29,1885" inputmode="decimal" autocomplete="off" required></label>
+            <label for="longitude">Longitude<input id="longitude" name="longitude" placeholder="-51,9210" inputmode="decimal" autocomplete="off" required></label>
+            <button type="submit" class="secondary-button" id="check-property">Consultar</button>
+          </form>
+          <p id="property-result" class="property-result" data-severity="unknown" role="status">Informe as coordenadas para consultar o mapa de suscetibilidade.</p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="screen" data-screen="history" aria-labelledby="history-heading" hidden>
+      <article class="data-panel history-panel">
+        <div class="data-heading">
+          <div><p class="eyebrow">APENAS TEMPO SIMULADO</p><h2 id="history-heading">Histórico do ensaio</h2><p class="data-subtitle">Um registro ao fim de cada intervalo de 10 minutos simulados.</p></div>
+          <span class="time-tag" id="history-clock">00:00</span>
+        </div>
+        <div class="history-empty" id="history-empty"><strong>O primeiro registro sai aos 10:00.</strong><p id="history-progress">Tempo simulado: 00:00.</p><button type="button" class="secondary-button" data-screen-target="overview">Voltar ao protótipo</button></div>
+        <div id="history-records" hidden>
+          <div class="history-table-wrap" tabindex="0" role="region" aria-label="Tabela de registros simulados">
+            <table class="history-table">
+              <thead><tr><th scope="col">Intervalo</th><th scope="col">Nível no fim (mm)</th><th scope="col">Chuva aplicada (mm)</th><th scope="col">Chuva medida (mm)</th><th scope="col">Pulsos</th><th scope="col">Faixa do reservatório</th><th scope="col">Aviso antecipado</th><th scope="col" data-admin-only hidden>Nível do dreno (mm)</th><th scope="col" data-admin-only hidden>Excedente esquerda / direita (mL)</th></tr></thead>
+              <tbody id="history-rows"></tbody>
+            </table>
+          </div>
+          <div class="history-pagination"><span id="history-count"></span><div><button type="button" class="secondary-button" id="history-newer">Mais novos</button><button type="button" class="secondary-button" id="history-older">Mais antigos</button></div></div>
+        </div>
+        <p class="history-footnote">Chuva aplicada é a entrada por funil em milímetros equivalentes. Chuva medida soma os pulsos da báscula no intervalo. Reiniciar o ensaio limpa o histórico.</p>
+      </article>
+    </section>
+    <footer class="page-footer"><span>FLOODSYSTEM <b>×</b> PROTÓTIPO DIGITAL</span><span>Monitoramento regional e laboratório de simulação</span></footer>
+  </main>
+  <dialog id="about-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fechar">×</button></form><p class="eyebrow">SOBRE ESTE TESTE</p><h2>Modelo do FloodSystem</h2><p>Modelo Web3D construído a partir da fotografia, das medidas fornecidas e do artigo do FloodSystem.</p><ul><li>Estrutura de 300 mm de largura e 265,5 mm de altura, sem funis. Acrílico de 5 mm.</li><li>Reservatório de 130 × 96 × 265,5 mm, com saída de segurança na lateral esquerda de 80 × 5 mm.</li><li>Caixa da báscula de 160 × 145 × 168 mm. Peça móvel de cerca de 128 × 82 × 40 mm, reconstruída pela foto.</li><li>O ultrassônico acompanha o nível. O sensor magnético registra uma virada a cada 2,17 mm de chuva no funil.</li><li>As mangueiras de entrada e saída têm 4 mm de diâmetro interno.</li><li>O funil tem boca estimada em 95 mm. O artigo usa área de 104,8 cm², equivalente a cerca de 115,5 mm de diâmetro.</li></ul><p>As vazões são estimadas. As faixas de alerta do ensaio são demonstrativas. A seção Chuva e rios usa dados externos identificados por fonte.</p><a href="https://doi.org/10.33448/rsd-v15i10.51935" target="_blank" rel="noopener noreferrer">Consultar o artigo ↗</a></dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

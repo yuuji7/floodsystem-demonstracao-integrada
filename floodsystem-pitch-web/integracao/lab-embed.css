@@ -1,0 +1,67 @@
+/* The original dashboard uses this layout only inside the presentation. */
+.lab-controls-toggle { display: none; }
+.lab-embed .sidebar:not(.open),
+.lab-embed .app-shell:not(.lab-show-controls) :is(.page-heading, .filters, .period-status),
+.lab-embed .context-banner p,
+.lab-embed .empty-notice,
+.lab-embed .water-tank-visual,
+.lab-embed .interpretation,
+.lab-embed .page-footer {
+  display: none;
+}
+
+.lab-embed .workspace { margin-left: 0; }
+.lab-embed .sidebar.open { width: min(236px, 85vw); overflow-y: auto; }
+.lab-embed .mobile-backdrop { position: fixed; inset: 0; background: #18334e60; border: 0; z-index: 25; }
+.lab-embed .mobile-menu-button { display: inline-flex; padding: 0; border: 0; }
+.lab-embed .topbar { height: 42px; min-height: 42px; padding: 0 13px; }
+.lab-embed .topbar-right { gap: 8px; }
+.lab-embed .lab-controls-toggle { display: inline-flex; align-items: center; min-height: 27px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--soft); font-size: 11px; cursor: pointer; }
+.lab-embed .lab-controls-toggle[aria-expanded="true"] { background: var(--line); }
+.lab-embed .theme-toggle { min-height: 27px; padding: 3px 6px; }
+.lab-embed .theme-toggle > span { display: none; }
+.lab-embed main { width: 100%; max-width: none; padding: 10px; }
+.lab-embed .page-heading { justify-content: flex-end; min-height: 0; margin: 0 0 8px; padding: 0; border: 0; background: none; box-shadow: none; }
+.lab-embed .page-heading > div, .lab-embed .page-heading::before, .lab-embed .page-heading::after { display: none; }
+.lab-embed .page-heading .export-button { flex: none; width: auto; height: auto; min-height: 28px; padding: 4px 8px; font-size: 11px; }
+.lab-embed .filters { margin-bottom: 6px; padding: 9px; }
+.lab-embed .period-status { margin-bottom: 8px; padding: 6px; }
+.lab-embed .context-banner { margin: 0 0 10px; padding: 7px 9px; gap: 8px; }
+.lab-embed .context-icon { width: 26px; height: 26px; }
+.lab-embed .context-icon svg { width: 15px; height: 15px; }
+.lab-embed .context-banner strong { font-size: 12px; }
+.lab-embed .context-label { font-size: 9px; padding: 3px 6px; }
+
+.lab-embed .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.lab-embed .metric-card { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 10px 10px 0; }
+.lab-embed .metric-card:first-child { grid-column: auto; }
+.lab-embed .metric-top { flex-wrap: wrap; gap: 3px; margin-bottom: 5px; }
+.lab-embed .metric-icon { width: 24px; height: 24px; border-radius: 6px; }
+.lab-embed .metric-icon svg { width: 15px; height: 15px; }
+.lab-embed .metric-tag { font-size: 8px; padding: 3px 4px; letter-spacing: .02em; }
+.lab-embed .metric-card h2 { align-self: stretch; font-size: 12px; line-height: 1.2; }
+.lab-embed .metric-value { font-size: 25px; line-height: 1.15; margin: 5px 0 7px; text-align: left; }
+.lab-embed .metric-value > span { margin-left: 3px; font-size: 10px; white-space: nowrap; }
+.lab-embed .metric-foot { min-height: 28px; margin-inline: -10px; padding: 4px 10px; font-size: 9px; }
+.lab-embed .water-metric-layout { display: block; min-height: 0; }
+
+.lab-embed .visuals-grid { grid-template-columns: minmax(0, 1.22fr) minmax(0, 1fr); gap: 8px; margin-bottom: 10px; }
+.lab-embed .panel-heading { padding: 10px 12px 6px; gap: 6px; }
+.lab-embed .panel-heading h2 { font-size: 15px; }
+.lab-embed .panel-heading .eyebrow { font-size: 8px; }
+.lab-embed .level-chart, .lab-embed .rain-chart { padding-inline: 7px; }
+.lab-embed .chart-readout { height: 24px; padding: 0 4px; }
+.lab-embed .chart-footer { flex-wrap: wrap; gap: 3px; padding: 5px 10px; font-size: 9px; }
+.lab-embed .chart-empty { min-height: 108px; padding: 5px; text-align: center; }
+.lab-embed .rain-panel { display: flex; flex-direction: column; align-items: stretch; }
+.lab-embed .rain-total { padding-inline: 11px; }
+.lab-embed .rain-total > span { font-size: 23px; }
+.lab-embed .rain-count { margin: auto 9px 8px; padding: 5px 8px; }
+.lab-embed .rain-unavailable { margin: 0 9px 8px; }
+.lab-embed .chart-caption { margin-bottom: 5px; font-size: 9px; }
+
+@media (max-width: 450px) {
+  .lab-embed .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lab-embed .metric-card:first-child { grid-column: 1 / -1; }
+  .lab-embed .visuals-grid { grid-template-columns: minmax(0, 1fr); }
+}

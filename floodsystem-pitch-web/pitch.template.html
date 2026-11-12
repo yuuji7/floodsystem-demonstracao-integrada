@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>FloodSystem · Apresentação</title>
+  <style>/* INSERT_CSS */</style>
+</head>
+<body>
+  <main id="deck" class="deck" aria-label="Apresentação FloodSystem">
+    <!-- SLIDES_BEFORE -->
+    <section class="slide interactive" id="demonstracao" aria-labelledby="demo-title" hidden>
+      <h1 id="demo-title">Demonstração</h1>
+      <div class="demo-grid">
+        <div class="lab-heading" id="lab-heading" hidden>
+          <h2>Laboratório 3D</h2>
+          <div class="pane-switch" id="lab-modes" role="group" aria-label="Modo do laboratório" hidden>
+            <button id="quick-lab" type="button" aria-pressed="true">Ensaio rápido</button>
+            <button id="complete-lab" type="button" aria-pressed="false">Laboratório completo</button>
+          </div>
+          <p id="telemetry-status" role="status">Conectando ao painel…</p>
+        </div>
+        <div class="viewer" id="viewer">
+          <canvas id="model" aria-label="Modelo 3D do FloodSystem" hidden></canvas>
+          <div id="model-labels" aria-hidden="true" hidden></div>
+          <p class="viewer-message" id="model-message" role="status">Carregando o protótipo 3D…</p>
+          <div class="camera-tools" id="camera-tools" hidden>
+            <button type="button" data-view="perspective" aria-pressed="true">Vista geral</button>
+            <button type="button" data-view="bucket" aria-pressed="false">Ver báscula</button>
+            <details class="camera-options" id="camera-options">
+              <summary>Opções do 3D</summary>
+              <div class="camera-options-panel">
+                <div class="camera-options-group" role="group" aria-label="Posição da câmera">
+                  <button type="button" data-view="front" aria-pressed="false">Frente</button>
+                  <button type="button" data-view="side" aria-pressed="false">Lateral</button>
+                  <button type="button" data-view="top" aria-pressed="false">Topo</button>
+                </div>
+                <div class="camera-options-group" role="group" aria-label="Elementos do modelo">
+                  <button type="button" data-overlay="setLabels" aria-pressed="false">Rótulos</button>
+                  <button type="button" data-overlay="setCutaway" aria-pressed="false">Ver interior</button>
+                  <button type="button" data-overlay="setDimensions" aria-pressed="false">Medidas</button>
+                </div>
+                <a href="https://floodsystem-web3d.vercel.app/#simular-chuva" target="_blank" rel="noopener noreferrer">Laboratório completo <span aria-hidden="true">↗</span></a>
+              </div>
+            </details>
+          </div>
+        </div>
+        <div class="demo-details" id="demo-details">
+          <p class="eyebrow"><span class="signal-dot" id="signal-dot" aria-hidden="true"></span> <span id="run-status">Ensaio simulado · pronto</span></p>
+          <dl class="readings">
+            <div><dt>Nível da água</dt><dd><output id="demo-level">30,0</output> <small>mm</small></dd></div>
+            <div><dt>Chuva medida pela báscula</dt><dd><output id="demo-rain">0,00</output> <small>mm</small></dd></div>
+            <div><dt>Viradas registradas</dt><dd><output id="demo-tips">0</output></dd></div>
+          </dl>
+          <div class="actions">
+            <button type="button" class="primary" data-run disabled>Iniciar chuva</button>
+            <button type="button" data-reset disabled>Reiniciar</button>
+            <span id="applied-rain" class="applied-rain">Chuva aplicada · 90 mm/h</span>
+          </div>
+          <div class="rain-presets" role="group" aria-label="Níveis de chuva">
+            <button type="button" data-quick-rain="0" aria-pressed="false">Sem chuva</button>
+            <button type="button" data-quick-rain="10" aria-pressed="false">Leve</button>
+            <button type="button" data-quick-rain="90" aria-pressed="true">Forte</button>
+            <button type="button" data-quick-rain="600" aria-pressed="false">Muito intensa</button>
+          </div>
+          <div class="lab-meta">
+            <p class="last-tip" id="last-tip">Última virada: —</p>
+            <a class="project-link" href="#moradia">Cenário de moradia</a>
+            <a id="free-demo-link" class="project-link" href="?modo=livre#demonstracao" target="_blank" rel="noopener noreferrer" hidden>Ensaio livre <span aria-hidden="true">↗</span></a>
+            <a class="project-link" href="https://github.com/luizfelipee7/FloodSystem" target="_blank" rel="noopener noreferrer">Projeto no GitHub <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <iframe class="complete-lab-frame" id="complete-lab-frame" title="Laboratório 3D completo" allow="fullscreen" hidden></iframe>
+        <section class="dashboard-pane" id="dashboard-pane" aria-labelledby="dashboard-title" hidden>
+          <div class="dashboard-heading">
+            <h2 id="dashboard-title">FloodSystem</h2>
+            <div class="pane-switch" id="dashboard-modes" role="group" aria-label="Área do FloodSystem" hidden>
+              <button id="monitor-tab" type="button" aria-pressed="true">Monitoramento</button>
+              <button id="experiments-tab" type="button" aria-pressed="false" hidden>Ensaios</button>
+              <button id="residences-tab" type="button" aria-pressed="false">Moradias</button>
+            </div>
+            <button type="button" id="panel-layout" class="pane-action" aria-pressed="false" hidden>Interface completa</button>
+            <a id="dashboard-link" target="_blank" rel="noopener noreferrer" hidden>Abrir painel <span aria-hidden="true">↗</span></a>
+          </div>
+          <iframe id="dashboard-frame" title="Painel original do FloodSystem em tempo real" hidden></iframe>
+          <iframe id="experiments-frame" title="Ensaios meteorológicos publicados do FloodSystem" hidden></iframe>
+          <div id="residence-preview" class="residence-preview" hidden></div>
+          <p id="dashboard-message" role="status">Preparando o painel local…</p>
+        </section>
+      </div>
+    </section>
+    <section class="slide interactive" id="parametros" aria-labelledby="params-title" hidden>
+      <h1 id="params-title">Parâmetros de ensaio</h1>
+      <div class="params-grid">
+        <form class="params" id="params">
+          <div class="field">
+            <label for="rain">Intensidade da chuva</label>
+            <div class="slider-row"><input type="range" id="rain" min="0" max="600" step="1" value="90"><output for="rain" id="rain-value">90 mm/h</output></div>
+          </div>
+          <div class="field">
+            <label for="leftValve">Torneira do nível</label>
+            <div class="slider-row"><input type="range" id="leftValve" min="0" max="100" step="5" value="10"><output for="leftValve" id="leftValve-value">10%</output></div>
+          </div>
+          <div class="field">
+            <label for="rightValve">Saída da báscula</label>
+            <div class="slider-row"><input type="range" id="rightValve" min="0" max="100" step="5" value="100"><output for="rightValve" id="rightValve-value">100%</output></div>
+          </div>
+          <div class="field paired">
+            <div><label for="initialLevel">Nível ao reiniciar</label><div class="select-wrap"><input type="number" id="initialLevel" min="0" max="195" step="1" value="30" inputmode="numeric"><span aria-hidden="true">mm</span></div></div>
+            <div><label for="speed">Velocidade do ensaio</label><select id="speed"><option value="1">Tempo real (1×)</option><option value="30">30×</option><option value="60" selected>60×</option><option value="120">120×</option></select></div>
+          </div>
+        </form>
+        <div class="test-summary">
+          <p class="eyebrow">Ensaio simulado</p>
+          <dl class="readings">
+            <div><dt>Tempo de ensaio</dt><dd><output id="params-time">00:00</output></dd></div>
+            <div><dt>Chuva por virada da báscula</dt><dd>2,17 <small>mm</small></dd></div>
+          </dl>
+          <div class="actions">
+            <button class="primary" type="button" id="return-to-demo">Ver demonstração</button>
+            <button type="button" data-reset disabled>Reiniciar</button>
+          </div>
+          <a id="free-params-link" class="project-link" href="?modo=livre#parametros" target="_blank" rel="noopener noreferrer" hidden>Ajustar velocidade no ensaio livre <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+    <section class="slide interactive residence-slide" id="moradia" data-title="Cenário de moradia" aria-labelledby="residence-title" hidden>
+      <h1 id="residence-title">Como a água afeta cada moradia?</h1>
+      <p class="residence-intro">São Paulo, capital · Três situações de moradia</p>
+      <div id="residence-content" class="residence-content">
+        <div class="residence-examples residence-homes" role="group" aria-label="Tipo de moradia em São Paulo">
+          <button type="button" data-residence-home="pantanal" aria-pressed="true">Casa térrea</button>
+          <button type="button" data-residence-home="leopoldina" aria-pressed="false">Apartamento · 5º andar</button>
+          <button type="button" data-residence-home="ubirajara" aria-pressed="false">Moradia junto ao córrego</button>
+        </div>
+        <div class="residence-context">
+          <article>
+            <h2 id="residence-home-title"></h2>
+            <p><strong>Condições do cenário</strong> <span id="residence-conditions"></span></p>
+            <p><strong>Por que há risco</strong> <span id="residence-exposure"></span></p>
+          </article>
+          <article>
+            <h2>Fato documentado</h2>
+            <p id="residence-fact"></p>
+            <div class="residence-links">
+              <a id="residence-source" target="_blank" rel="noopener noreferrer"></a>
+              <a id="residence-context-source" target="_blank" rel="noopener noreferrer" hidden></a>
+            </div>
+          </article>
+        </div>
+        <div class="residence-examples" role="group" aria-label="Exemplos de chuva e nível na moradia">
+          <button type="button" data-residence-example="leve" aria-pressed="false">Chuva leve</button>
+          <button type="button" data-residence-example="forte" aria-pressed="true">Chuva forte</button>
+          <button type="button" data-residence-example="subindo" aria-pressed="false">Água subindo</button>
+          <button type="button" data-residence-example="comparacao" aria-pressed="false">Nível de 95 mm</button>
+          <button type="button" data-residence-example="entrou" aria-pressed="false">Nível de 125 mm</button>
+          <button type="button" id="residence-follow-lab" aria-pressed="false" hidden>Acompanhar nível do 3D</button>
+        </div>
+        <div class="residence-grid">
+          <div class="residence-readout">
+            <dl class="residence-values">
+              <div><dt id="residence-rain-label">Chuva simulada em 1 h</dt><dd><span id="residence-rain">32</span> <small id="residence-rain-unit">mm</small></dd></div>
+              <div><dt>Nível externo no teste</dt><dd><span id="residence-level">14</span> <small>mm</small></dd><dd id="residence-trend" class="residence-trend"></dd></div>
+            </dl>
+            <div class="residence-alert" id="residence-alert" data-severity="watch">
+              <span class="residence-result-label">Resultado simulado</span>
+              <strong id="residence-alert-title" role="status">Atenção</strong>
+              <p id="residence-alert-reason"></p>
+              <p id="residence-alert-action"></p>
+            </div>
+          </div>
+          <div class="residence-visual">
+            <div id="residence-diagram" class="residence-diagram" aria-hidden="true">
+              <div class="residence-house"><span id="residence-point">Casa térrea</span></div>
+              <div class="residence-water"></div>
+              <div class="residence-water-inside"></div>
+              <div class="residence-floor"></div>
+              <div class="residence-doorstep"></div>
+              <span class="residence-sensor">Sensor no acesso</span>
+              <span class="residence-entrance" id="residence-entrance">Soleira · 80 mm</span>
+              <span class="residence-road">Piso externo · 0 mm</span>
+            </div>
+            <label class="residence-level-control" for="residence-level-input">Ajustar nível externo simulado <input type="range" id="residence-level-input" min="0" max="200" step="1" value="14"></label>
+          </div>
+        </div>
+        <p class="residence-note"><strong id="residence-thresholds">Soleira a 80 mm · aviso prioritário a partir de 50 mm.</strong> Andar, alturas e leituras do teste são ilustrativos. O ensaio pressupõe passagem livre pela entrada.</p>
+        <nav class="residence-links" aria-label="Fontes e navegação do cenário">
+          <a href="#demonstracao" id="residence-back">Voltar à demonstração</a>
+          <a href="https://metadados.geosampa.prefeitura.sp.gov.br/geonetwork/srv/api/records/432c06b1-03a1-4b1f-9210-423e1b58e869" target="_blank" rel="noopener noreferrer">Ocorrências no GeoSampa</a>
+          <a href="https://smartsampa.prefeitura.sp.gov.br/web/defesa_civil/w/cuidados_importantes/179951" target="_blank" rel="noopener noreferrer">Orientações da Defesa Civil</a>
+        </nav>
+      </div>
+    </section>
+    <!-- SLIDES_AFTER -->
+    <nav class="deck-nav" aria-label="Navegação dos slides">
+      <button id="prev" type="button" aria-label="Slide anterior" title="Slide anterior (←)">‹</button>
+      <select id="jump" aria-label="Ir para um slide" title="Ir para um slide"></select>
+      <button id="next" type="button" aria-label="Próximo slide" title="Próximo slide (→)">›</button>
+      <button id="fullscreen" type="button" aria-label="Tela cheia" title="Tela cheia (F)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></svg>
+      </button>
+    </nav>
+    <p class="sr-only" id="slide-announcement" aria-live="polite"></p>
+  </main>
+  <noscript>Ative o JavaScript no navegador para navegar na apresentação e usar o protótipo 3D.</noscript>
+  <!-- INSERT_MODULES -->
+</body>
+</html>
